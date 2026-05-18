@@ -1,308 +1,97 @@
-# Password-Manager-in-Python.-Fernet-Symmetric-Encryption-
+# 🔐 Password Manager (Python - Fernet Encryption)
 
-+--------------------------------+
-              |      User Inputs Master PW     |
-              +--------------------------------+
-                              |
-                              v
-+------------+       +----------------------------+       +---------------+
-|  key.key   | ----> | Loaded by cryptography     | ----> | Active Cipher |
-| (Disk File)|       | as Fernet symmetric key    |       |   Instance    |
-+------------+       +----------------------------+       +---------------+
-|
-+--------------------------------------------+
-|
-v
-+----------------------------+
-|   Main Interactive Menu    |
-+----------------------------+
-/                        \
-(add) /                          \ (view)
-v                            v
-+------------------------+   +------------------------+
-| Read Account & Pass    |   | Read 'passwords.txt'   |
-| Encrypt plain text     |   | Split raw fields (|)   |
-| Append to passwords.txt|   | Decrypt ciphertext     |
-+------------------------+   | Display to stdout      |
-+------------------------+
-
-
-### Encryption Protocol
-The application leverages **Fernet**, an implementation of symmetric authenticated cryptography. Under the hood, Fernet builds upon:
-- **AES-128** in CBC mode for encryption.
-- **HMAC-SHA256** for authentication/integrity verification.
-- An initialization vector (IV) populated via secure random numbers.
+A lightweight command-line password manager built using Python.  
+It securely stores credentials locally using symmetric encryption via the `cryptography` library (Fernet).
 
 ---
 
-## Prerequisites
+## 🚀 Features
 
-Before running the application, you must install the `cryptography` package:
-
-```bash
-pip install cryptography
-File Structure
-Upon running the script, the following directory environment is maintained:
-
-pm.py (or your chosen script name) — The core execution logic.
-
-key.key — Generated automatically on the first execution. Contains the raw symmetric key. Do not delete or share this file.
-
-passwords.txt — The persistent encrypted file containing data serialized as AccountName|EncryptedCiphertext.
-
-Usage Guide
-Initialization / Running:
-Launch the application using your terminal environment:
-
-Bash
-python pm.py
-Master Password Prompt:
-Upon startup, you will be prompted to enter a master password.
-
-Note: In this basic implementation version, the master password acts as a gateway placeholder and does not yet derive the cryptographic key dynamically.
-
-Adding a Password (add):
-
-Choose add when prompted.
-
-Enter your account designation (e.g., github).
-
-Enter your plaintext password. The script encrypts this stream instantly and writes it safely to disk.
-
-Viewing Passwords (view):
-
-Choose view when prompted.
-
-The application parses passwords.txt, matches records, and decrypts the cipher strings on-the-fly back into readable credentials.
-
-Exiting (q):
-
-Type q to safely terminate the execution loop.
-
-Core Code Implementation
-Python
-import os
-from cryptography.fernet import Fernet
-
-# 1. Function to generate and save a key if it doesn't exist
-def write_key():
-    key = Fernet.generate_key()
-    with open("key.key", "wb") as key_file:
-        key_file.write(key)
-
-# 2. Check if the key file exists; if not, create it
-if not os.path.exists("key.key"):
-    write_key()
-
-def load_key():
-    return open("key.key", "rb").read()
-
-# 3. Use ONLY the loaded key for Fernet
-key = load_key()
-fer = Fernet(key)
-
-pwd = input("WELCOME TO PASSWORD MANAGER. Enter master password: ")
-
-def view():
-    if not os.path.exists("passwords.txt"):
-        print("No passwords saved yet.")
-        return
-    with open("passwords.txt", "r") as f:
-        for line in f.readlines():
-            data = line.rstrip()
-            if "|" not in data: continue
-            user, password = data.split("|")
-            clean_pass = password.strip("b'").strip("'")
-            print(f"Account: {user} | Password: {fer.decrypt(clean_pass.encode()).decode()}")
-
-def add():
-    name = input("Account Name: ")
-    p_word = input("Password: ")
-    with open("passwords.txt", "a") as f:
-        f.write(name + "|" + fer.encrypt(p_word.encode()).decode() + "\n") 
-
-while True: 
-    mode = input("Would you like to add a new password or view existing passwords (view, add, or 'q' to quit)? ").lower()
-    if mode == "q":
-        break
-    elif mode == "view":
-        view()
-    elif mode == "add":
-        add()
-    else:      
-        print("Invalid mode.") 
-Security Disclaimer & Best Practices
-This script is an educational proof-of-concept demonstrating basic symmetric encryption pipelines in Python. For deployment in live production environments, note the following vulnerabilities:
-
-Key Vulnerability: The secret key (key.key) is stored in plaintext on disk. Anyone with filesystem read access can compromise the entire password vault.
-
-Master Password isolation: The master password text input does not currently drive key derivation functions (KDF). To secure this professionally, use a primitive like PBKDF2 or Argon2 to compute the decryption key dynamically out of user memory.
-"""
-
-Write out the professional README.md file
-with open("README.md", "w", encoding="utf-8") as f:
-f.write(readme_content)
-
-print("README.md written successfully.")
-
-Your Markdown file is ready
-[file-tag: code-generated-file-0-1779094757819245344]
-
-Here is the complete, professionally formatted `README.md` text designed specifically for your initial code implementation. It covers technical features, workflow architecture, usage instructions, and crucial security disclaimers outlining how your implementation operates.
-
-```markdown
-# Minimalist Python Password Manager
-
-A lightweight, local command-line password manager written in Python. This utility stores your credentials locally in an encrypted text file using symmetric encryption via the `cryptography` library.
-
-## Features
-
-- **Local Storage:** All credentials are stored directly on your machine in `passwords.txt`.
-- **Symmetric Encryption:** Uses the `cryptography.fernet.Fernet` recipe to ensure passwords cannot be read as plain text.
-- **Dynamic Key Generation:** Automatically generates a local encryption key (`key.key`) if one does not already exist.
-- **Interactive CLI:** A simple prompt-driven loop to quickly add or retrieve your credentials.
+- 🔒 AES-based symmetric encryption (Fernet)
+- 📁 Local storage of encrypted passwords
+- 🧠 Automatic key generation (`key.key`)
+- 💻 Simple command-line interface (CLI)
+- ➕ Add and view stored credentials
+- ⚡ Lightweight and beginner-friendly
 
 ---
 
-## Technical Architecture & Workflow
+## 🏗️ How It Works
 
-The application operates on a simple local state model where data storage and encryption keys are isolated on your filesystem:
 
-              +--------------------------------+
-              |      User Inputs Master PW     |
-              +--------------------------------+
-                              |
-                              v
-+------------+       +----------------------------+       +---------------+
-|  key.key   | ----> | Loaded by cryptography     | ----> | Active Cipher |
-| (Disk File)|       | as Fernet symmetric key    |       |   Instance    |
-+------------+       +----------------------------+       +---------------+
-|
-+--------------------------------------------+
-|
-v
-+----------------------------+
-|   Main Interactive Menu    |
-+----------------------------+
+User Input (Master Password)
+↓
+Load / Generate key.key
+↓
+Create Fernet Cipher Instance
+↓
+CLI Menu
 /
+ADD VIEW
+| |
+Encrypt Decrypt
+| |
+Store in Read from
+passwords.txt passwords.txt
 
-(add) /                          \ (view)
-v                            v
-+------------------------+   +------------------------+
-| Read Account & Pass    |   | Read 'passwords.txt'   |
-| Encrypt plain text     |   | Split raw fields (|)   |
-| Append to passwords.txt|   | Decrypt ciphertext     |
-+------------------------+   | Display to stdout      |
-+------------------------+
-
-
-### Encryption Protocol
-The application leverages **Fernet**, an implementation of symmetric authenticated cryptography. Under the hood, Fernet builds upon:
-- **AES-128** in CBC mode for encryption.
-- **HMAC-SHA256** for authentication/integrity verification.
-- An initialization vector (IV) populated via secure random numbers.
 
 ---
 
-## Prerequisites
+## 🔐 Encryption Details
 
-Before running the application, you must install the `cryptography` package:
+This project uses **Fernet symmetric encryption**, which includes:
+
+- AES-128 (CBC mode)
+- HMAC-SHA256 (data integrity)
+- Secure random IV generation
+
+---
+
+## 📦 Installation
+
+Install required dependency:
 
 ```bash
 pip install cryptography
-File Structure
-Upon running the script, the following directory environment is maintained:
+📁 File Structure
+Password Manager Project/
+│
+├── password_Manager.py   # Main program
+├── key.key               # Encryption key (auto-generated)
+├── passwords.txt         # Encrypted password storage
+├── .gitignore            # Ignored sensitive files
+└── README.md             # Documentation
+▶️ Usage
 
-pm.py (or your chosen script name) — The core execution logic.
+Run the program:
 
-key.key — Generated automatically on the first execution. Contains the raw symmetric key. Do not delete or share this file.
+python password_Manager.py
+🧭 Menu Options
+➕ Add Password
+Enter account name
+Enter password
+Stored in encrypted format
+👁️ View Passwords
+Decrypts and displays stored credentials
+❌ Exit
+Type q to quit safely
+⚠️ Security Warning
 
-passwords.txt — The persistent encrypted file containing data serialized as AccountName|EncryptedCiphertext.
+This project is for educational purposes only.
 
-Usage Guide
-Initialization / Running:
-Launch the application using your terminal environment:
+Limitations:
+❌ Encryption key stored locally (key.key)
+❌ No password-based key derivation (no PBKDF2/Argon2)
+❌ Not suitable for production use
+Improvements for production:
+Use KDF (PBKDF2 / Argon2)
+Store key in secure vault / OS keychain
+Use database instead of plain text file
+💡 Future Improvements
+GUI version (Tkinter / PyQt)
+Encrypted database storage
+Master password authentication system
+Clipboard auto-clear feature
+📜 License
 
-Bash
-python pm.py
-Master Password Prompt:
-Upon startup, you will be prompted to enter a master password.
-
-Note: In this basic implementation version, the master password acts as a gateway placeholder and does not yet derive the cryptographic key dynamically.
-
-Adding a Password (add):
-
-Choose add when prompted.
-
-Enter your account designation (e.g., github).
-
-Enter your plaintext password. The script encrypts this stream instantly and writes it safely to disk.
-
-Viewing Passwords (view):
-
-Choose view when prompted.
-
-The application parses passwords.txt, matches records, and decrypts the cipher strings on-the-fly back into readable credentials.
-
-Exiting (q):
-
-Type q to safely terminate the execution loop.
-
-Core Code Implementation
-Python
-import os
-from cryptography.fernet import Fernet
-
-# 1. Function to generate and save a key if it doesn't exist
-def write_key():
-    key = Fernet.generate_key()
-    with open("key.key", "wb") as key_file:
-        key_file.write(key)
-
-# 2. Check if the key file exists; if not, create it
-if not os.path.exists("key.key"):
-    write_key()
-
-def load_key():
-    return open("key.key", "rb").read()
-
-# 3. Use ONLY the loaded key for Fernet
-key = load_key()
-fer = Fernet(key)
-
-pwd = input("WELCOME TO PASSWORD MANAGER. Enter master password: ")
-
-def view():
-    if not os.path.exists("passwords.txt"):
-        print("No passwords saved yet.")
-        return
-    with open("passwords.txt", "r") as f:
-        for line in f.readlines():
-            data = line.rstrip()
-            if "|" not in data: continue
-            user, password = data.split("|")
-            clean_pass = password.strip("b'").strip("'")
-            print(f"Account: {user} | Password: {fer.decrypt(clean_pass.encode()).decode()}")
-
-def add():
-    name = input("Account Name: ")
-    p_word = input("Password: ")
-    with open("passwords.txt", "a") as f:
-        f.write(name + "|" + fer.encrypt(p_word.encode()).decode() + "\n") 
-
-while True: 
-    mode = input("Would you like to add a new password or view existing passwords (view, add, or 'q' to quit)? ").lower()
-    if mode == "q":
-        break
-    elif mode == "view":
-        view()
-    elif mode == "add":
-        add()
-    else:      
-        print("Invalid mode.") 
-Security Disclaimer & Best Practices
-This script is an educational proof-of-concept demonstrating basic symmetric encryption pipelines in Python. For deployment in live production environments, note the following vulnerabilities:
-
-Key Vulnerability: The secret key (key.key) is stored in plaintext on disk. Anyone with filesystem read access can compromise the entire password vault.
-
-Master Password isolation: The master password text input does not currently drive key derivation functions (KDF). To secure this professionally, use a primitive like PBKDF2 or Argon2 to compute the decryption key dynamically out of user memory.
+MIT License
